@@ -1,0 +1,61 @@
+package com.vr.autorizador.cartao.app;
+
+import com.vr.autorizador.cartao.CriarCartaoUseCase;
+import com.vr.autorizador.cartao.CriarCartaoUseCase.CriarCartaoCmd;
+import com.vr.autorizador.cartao.domain.CartaoDomainRepository;
+import com.vr.autorizador.cartao.exception.CartaoExisteException;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import java.math.BigDecimal;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+class CriarCartaoAppServiceTests {
+
+    @Autowired
+    CriarCartaoUseCase criarCartao;
+
+    @Autowired
+    CartaoDomainRepository repository;
+
+    @Test
+    void deveCriarUmCartao() {
+        var cmd = CriarCartaoCmd.builder()
+            .numeroCartao("999999999999")
+            .senha("1234")
+            .build();
+
+        criarCartao.handle(cmd);
+
+        var cartaoCriado = repository.findByNumeroCartao(cmd.getNumeroCartao()).orElse(null);
+
+        assertNotNull(cartaoCriado);
+        assertEquals(cmd.getNumeroCartao(), cartaoCriado.getNumeroCartao());
+        assertEquals(cmd.getSenha(), cartaoCriado.getSenha());
+        assertEquals(BigDecimal.valueOf(500), cartaoCriado.getSaldo());
+
+        repository.deleteByNumeroCartao("999999999999");
+    }
+
+    @Test
+    void naoDeveCriarUmCartaoRepitido() {
+        var cmd = CriarCartaoCmd.builder()
+            .numeroCartao("99999999999999999999")
+            .senha("1234")
+            .build();
+
+        criarCartao.handle(cmd);
+
+        assertThrows(CartaoExisteException.class, ()-> criarCartao.handle(cmd));
+
+        repository.deleteByNumeroCartao("99999999999999999999");
+    }
+
+}

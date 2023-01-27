@@ -1,0 +1,4 @@
+com\vr\miniautorizador\cartao\app\CriarCartaoAppServiceTests.class
+com\vr\miniautorizador\cartao\app\ObterSaldoAppServiceTests.class
+com\vr\miniautorizador\ApplicationTests.class
+com\vr\miniautorizador\cartao\app\IncluirTransacaoAppServiceTests.class
